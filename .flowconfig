@@ -1,0 +1,19 @@
+# .flowconfig
+[include]
+./node_modules/
+
+[ignore]
+.*node_modules/webpack.*
+.*/react/node_modules/.*
+./build/.*
+
+[libs]
+flowdeclarations
+flow-typed
+
+[options]
+esproposal.class_static_fields=enable
+module.name_mapper='.*\(.css\)' -> 'empty/object'
+module.name_mapper='.*\(.png\)' -> 'empty/object'
+module.name_mapper='^~\/\(.*\)$' -> '<PROJECT_ROOT>/src/\1'
+suppress_comment= \\(.\\|\n\\)*\\$FlowFixMe
