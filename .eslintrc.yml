@@ -1,0 +1,44 @@
+env:
+  browser: true
+  es6: true
+extends:
+  - airbnb
+  - plugin:flowtype/recommended
+plugins:
+- react
+- jsx-a11y
+- import
+- flowtype
+rules:
+  arrow-parens: off
+  eol-last: off
+  comma-dangle: off
+  class-methods-use-this: off
+  radix: off
+  indent:
+  - error
+  - 4
+  react/jsx-boolean-value: off
+  react/jsx-indent-props:
+  - error
+  - 4
+  react/jsx-indent:
+  - error
+  - 4
+  quotes:
+  - error
+  - single
+  semi:
+  - error
+  - never
+  import/extensions:
+  - error
+  - never
+  import/no-unresolved: [2, { "ignore": ["^[~]"] }]
+settings:
+  import/resolver:
+    babel-root-import: {}
+    node:
+      extensions:
+      - .js
+      - .jsx
