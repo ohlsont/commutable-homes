@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import TwitterManager from './twitter'
 
 export default class App extends Component {
