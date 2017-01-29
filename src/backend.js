@@ -5,17 +5,21 @@ import Log from 'loglevel'
 
 class Backend {
 
-    static token: string
-    static url: string
+    static baseUrl: string
+    localBaseUrl: string
 
-    static get(url: string, queryParams?: Object = {}): Promise<Object> {
-        return Backend.doRequest(url, queryParams)
+    constructor(localBaseUrl: string) {
+        this.localBaseUrl = localBaseUrl || Backend.baseUrl
     }
 
-    static post(url: string, queryParams: Object = {}, data: Object | Array<any>,
+    get(url: string, queryParams?: Object = {}): Promise<Object> {
+        return this.doRequest(url, queryParams)
+    }
+
+    post(url: string, queryParams: Object = {}, data: Object | Array<any>,
                 excludeAccessToken: boolean = false): Promise<Object> {
         const body = JSON.stringify(data)
-        return Backend.doRequest(url, queryParams, {
+        return this.doRequest(url, queryParams, {
             method: 'post',
             body,
             headers: {
@@ -25,17 +29,17 @@ class Backend {
         })
     }
 
-    static delete(url: string, queryParams: Object = {}, excludeAccessToken: boolean = false) {
-        return Backend.doRequest(url, queryParams, {
+    delete(url: string, queryParams: Object = {}, excludeAccessToken: boolean = false) {
+        return this.doRequest(url, queryParams, {
             method: 'delete',
             excludeAccessToken,
         })
     }
 
-    static put(url: string, queryParams?: Object = {}, data?: any = {}): Promise<Object> {
+    put(url: string, queryParams?: Object = {}, data?: any = {}): Promise<Object> {
         const body = JSON.stringify(data)
 
-        return Backend.doRequest(url, queryParams, {
+        return this.doRequest(url, queryParams, {
             method: 'put',
             headers: {
                 'Content-Type': 'application/json',
@@ -44,8 +48,8 @@ class Backend {
         })
     }
 
-    static doRequest(uri: string, params: Object = {}, options: Object = {}): Promise<Object> {
-        let url = `${Backend.url}${uri}`
+    doRequest(uri: string, params: Object = {}, options: Object = {}): Promise<Object> {
+        let url = `${this.localBaseUrl}${uri}`
         const stringifiedQueryParams = Backend.makeQueryString(params)
         url += stringifiedQueryParams
 
