@@ -13,11 +13,13 @@ class Backend {
     }
 
     get(url: string, queryParams?: Object = {}): Promise<Object> {
-        return this.doRequest(url, queryParams)
+        return this.doRequest(url, queryParams, {
+            credentials: 'omit'
+        })
     }
 
     post(url: string, queryParams: Object = {}, data: Object | Array<any>,
-                excludeAccessToken: boolean = false): Promise<Object> {
+         excludeAccessToken: boolean = false): Promise<Object> {
         const body = JSON.stringify(data)
         return this.doRequest(url, queryParams, {
             method: 'post',
@@ -50,12 +52,14 @@ class Backend {
 
     doRequest(uri: string, params: Object = {}, options: Object = {}): Promise<Object> {
         let url = `${this.localBaseUrl}${uri}`
-        const stringifiedQueryParams = Backend.makeQueryString(params)
-        url += stringifiedQueryParams
+        url += Backend.makeQueryString(params)
 
         return fetch(url, options)
             .then(resp => {
+                Log.error('HeHE', url)
+                Log.error('HeHE', resp.blob())
                 if (resp.ok) {
+                    Log.info('HeHE', resp.body)
                     if (resp.status === 204) {
                         return {}
                     }
