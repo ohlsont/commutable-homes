@@ -1,9 +1,10 @@
+/* eslint-disable */
 const ConstructionData = {
     type: 'FeatureCollection',
     features: [
         {
             type: 'Feature',
-            geometry: { type: 'Point', coordinates: [357733.78125, 6614523.5] },
+            geometry: {type: 'Point', coordinates: [357733.78125, 6614523.5]},
             properties: {
                 Name: '',
                 URL: 'http://www.trafikverket.se/vag649',

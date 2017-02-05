@@ -26,7 +26,7 @@ npm start
 open http://localhost:3000
 ```
 
-Now edit `src/App.jsx`.  
+Now edit `src/index.jsx`.  
 Your changes will appear without reloading the browser like in [this video](http://vimeo.com/100010922).
 
 ### Linting
