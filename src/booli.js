@@ -3,7 +3,7 @@
 import 'whatwg-fetch'
 import SHA1 from 'sha1-es'
 
-import Backend from './backend'
+import Backend from '~/services/backend'
 import BooliCredentials from './credentials/booli_credentials'
 
 class Booli {

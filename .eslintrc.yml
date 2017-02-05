@@ -37,7 +37,6 @@ rules:
   import/no-unresolved: [2, { "ignore": ["^[~]"] }]
 settings:
   import/resolver:
-    babel-root-import: {}
     node:
       extensions:
       - .js

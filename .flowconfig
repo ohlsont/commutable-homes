@@ -1,18 +1,33 @@
 # .flowconfig
 [include]
-./node_modules/
+.*src/*
 
 [ignore]
+.*node_modules/unflowify.*
+.*node_modules/draftjs-utils.*
+.*node_modules/draft.*
+.*node_modules/fbjs.*
+.*node_modules/jsonlint-lines-primitives.*
+.*node_modules/mapbox-gl-style-spec.*
+.*node_modules/react-facebook-login.*
 .*node_modules/webpack.*
+.*node_modules/reqwest/tests/*
 .*/react/node_modules/.*
 ./build/.*
+./languages/.*
 
 [libs]
 flowdeclarations
 flow-typed
+./node_modules/fbjs/flow/lib
 
 [options]
 esproposal.class_static_fields=enable
+module.file_ext=.js
+module.file_ext=.json
+module.file_ext=.jsx
+module.file_ext=.css
+module.file_ext=.scss
 module.name_mapper='.*\(.css\)' -> 'empty/object'
 module.name_mapper='.*\(.png\)' -> 'empty/object'
 module.name_mapper='^~\/\(.*\)$' -> '<PROJECT_ROOT>/src/\1'

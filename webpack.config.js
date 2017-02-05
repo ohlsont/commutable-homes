@@ -1,5 +1,6 @@
 const webpack = require('webpack')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const FlowStatusWebpackPlugin = require('flow-status-webpack-plugin')
 const path = require('path')
 
 const d = __dirname
@@ -113,6 +114,7 @@ function isExternal(module) {
 const plugins = [
     isProduction ? null : new webpack.HotModuleReplacementPlugin(),
     isProduction ? null : new webpack.NoEmitOnErrorsPlugin(),
+    isProduction ? null : new FlowStatusWebpackPlugin({ failOnError: true }),
     isProduction ? new ExtractTextPlugin({ filename: 'style.css', allChunks: true }) : null,
     isProduction ? new webpack.DefinePlugin({
         'process.env': {

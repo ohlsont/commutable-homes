@@ -1,7 +1,10 @@
 import React from 'react'
 import ReactMapboxGl, { GeoJSONLayer, ScaleControl, ZoomControl } from 'react-mapbox-gl'
+import geojsonExtent from 'geojson-extent'
 
 import ConstructionData from './../../data/traffikverket'
+import { booli } from './../../data/booli'
+import { stops } from './../../data/stops'
 
 /* eslint-disable */
 function utmToLatLng(zone, easting, northingParam, northernHemisphere){
@@ -70,8 +73,14 @@ function utmToLatLng(zone, easting, northingParam, northernHemisphere){
 }
 /* eslint-enable */
 
+type MapState = {
+    booliGeojson: Object,
+    json: Object,
+    stopsGeoJson: Object,
+}
+
 class Map extends React.Component {
-    state = {}
+    state: MapState = {}
 
     componentWillMount() {
         /*
@@ -99,8 +108,47 @@ class Map extends React.Component {
             return feature
         })
 
+        const booliGeojson = {
+            type: 'FeatureCollection',
+            features: booli.sold.map(sale => ({
+                type: 'Feature',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [
+                        sale.location.position.longitude,
+                        sale.location.position.latitude
+                    ]
+                },
+                properties: {
+                    Name: Math.round(sale.soldPrice / sale.livingArea)
+                }
+            }))
+        }
 
-        this.setState({ json: data })
+        const stopsGeoJson = {
+            type: 'FeatureCollection',
+            features: stops.map(stop => ({
+                type: 'Feature',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [
+                        stop.stop_lon,
+                        stop.stop_lat,
+                    ]
+                },
+                properties: {
+                    Name: stop.stop_name
+                }
+            }))
+        }
+
+        console.log(booliGeojson)
+
+        this.setState({
+            json: data,
+            booliGeojson,
+            stopsGeoJson
+        })
     }
 
     props: MapProps
@@ -113,7 +161,7 @@ class Map extends React.Component {
         }
         const conf = {
             accessToken: 'pk.eyJ1IjoiZmFicmljOCIsImEiOiJjaWc5aTV1ZzUwMDJwdzJrb2w0dXRmc2d0In0.p6GGlfyV-WksaDV_KdN27A',
-            style: 'mapbox://styles/mapbox/streets-v8'
+            style: 'mapbox://styles/mapbox/dark-v8'
         }
         return (<ReactMapboxGl
             style={conf.style}
@@ -122,16 +170,41 @@ class Map extends React.Component {
             zoom={[9, 12]}
             movingMethod="jumpTo"
             containerStyle={{ height: '100vh', width: '100%' }}
+            fitBounds={geojsonExtent(this.state.booliGeojson)}
         >
             <ScaleControl />
             <ZoomControl />
+            {/* <GeoJSONLayer
+             data={this.state.json}
+             symbolLayout={{
+             'text-field': '{Name}',
+             'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+             'text-offset': [0, 0.6],
+             'text-anchor': 'top'
+             }}
+             /> */}
             <GeoJSONLayer
-                data={this.state.json}
+                data={this.state.stopsGeoJson}
+                circlePaint={{
+                    'circle-color': 'blue'
+                }}
+            />
+            <GeoJSONLayer
+                data={this.state.booliGeojson}
                 symbolLayout={{
                     'text-field': '{Name}',
                     'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
                     'text-offset': [0, 0.6],
                     'text-anchor': 'top'
+                }}
+                circlePaint={{
+                    'circle-color': {
+                        property: 'Name',
+                        stops: [
+                            [40000, '#f1f075'],
+                            [100000, '#e55e5e']
+                        ]
+                    }
                 }}
             />
         </ReactMapboxGl>)

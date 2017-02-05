@@ -67,7 +67,9 @@
     "webpack-dotenv-plugin": "1.4.0"
   },
   "dependencies": {
+    "geojson-extent": "^0.3.2",
     "loglevel": "^1.4.1",
+    "maki": "^2.1.0",
     "material-ui": "^0.16.6",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
