@@ -9,7 +9,6 @@ class App extends Component { // eslint-disable-line
         return (
             <MuiThemeProvider>
                 <div>
-                    <h1>Hello, world ddd dd</h1>
                     <Map geoJson={{}} />
                 </div>
             </MuiThemeProvider>

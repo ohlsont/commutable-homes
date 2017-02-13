@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactMapboxGl, { GeoJSONLayer, ScaleControl, ZoomControl } from 'react-mapbox-gl'
+import ReactMapboxGl, { GeoJSONLayer, ScaleControl, ZoomControl, Popup } from 'react-mapbox-gl'
 import geojsonExtent from 'geojson-extent'
 
 import ConstructionData from './../../data/traffikverket'
@@ -77,11 +77,14 @@ type MapState = {
     booliGeojson: Object,
     json: Object,
     stopsGeoJson: Object,
+    popupCoordinate: {
+        lat: number,
+        lng: number,
+    },
 }
 
 class Map extends React.Component {
-    state: MapState = {}
-
+    state: MapState
     componentWillMount() {
         /*
          const bak = new Backend('http://www.trafikverket.se/Trafikverket/GenericMapApplication/')
@@ -153,24 +156,43 @@ class Map extends React.Component {
 
     props: MapProps
 
+    mapClick(mapParam: Object, event: Object) {
+        const map = mapParam
+        const features = map.queryRenderedFeatures(event.point).filter(feature => feature.layer === 'stopsGeoJson')
+        map.getCanvas().style.cursor = (features.length) ? 'pointer' : ''
+
+        if (!features.length) {
+            // popup.remove()
+            return
+        }
+
+        const feature = features[0]
+
+        // Populate the popup and set its coordinates
+        // based on the feature found.
+        console.log('aa ', feature, event.point)
+        this.setState({ popupCoordinate: event.lngLat })
+    }
+
     render() {
         if (!this.state.json) {
             return (<div>
                 no data
             </div>)
         }
+
         const conf = {
             accessToken: 'pk.eyJ1IjoiZmFicmljOCIsImEiOiJjaWc5aTV1ZzUwMDJwdzJrb2w0dXRmc2d0In0.p6GGlfyV-WksaDV_KdN27A',
             style: 'mapbox://styles/mapbox/dark-v8'
         }
+        const stopsGeoJson = 'stopsGeoJson'
         return (<ReactMapboxGl
             style={conf.style}
             accessToken={conf.accessToken}
-            center={[12, 57.7]}
-            zoom={[9, 12]}
+            onClick={(mapParam: Object, event: Object) => this.mapClick(mapParam, event)}
             movingMethod="jumpTo"
             containerStyle={{ height: '100vh', width: '100%' }}
-            fitBounds={geojsonExtent(this.state.booliGeojson)}
+            fitBounds={this.state.popupCoordinate ? null : geojsonExtent(this.state.booliGeojson)}
         >
             <ScaleControl />
             <ZoomControl />
@@ -184,6 +206,7 @@ class Map extends React.Component {
              }}
              /> */}
             <GeoJSONLayer
+                id={stopsGeoJson}
                 data={this.state.stopsGeoJson}
                 circlePaint={{
                     'circle-color': 'blue'
@@ -207,6 +230,13 @@ class Map extends React.Component {
                     }
                 }}
             />
+            {this.state.popupCoordinate && <Popup
+                key={'popup'}
+                offset={[0, -50]}
+                coordinates={[this.state.popupCoordinate.lng, this.state.popupCoordinate.lat]}
+            >
+                hej
+            </Popup>}
         </ReactMapboxGl>)
     }
 }
