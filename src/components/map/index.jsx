@@ -1,9 +1,9 @@
+// @flow
 import React from 'react'
 import ReactMapboxGl, { GeoJSONLayer, ScaleControl, ZoomControl, Popup } from 'react-mapbox-gl'
 import geojsonExtent from 'geojson-extent'
 
 import ConstructionData from './../../data/traffikverket'
-import { booli } from './../../data/booli'
 import { stops } from './../../data/stops'
 
 /* eslint-disable */
@@ -74,17 +74,22 @@ function utmToLatLng(zone, easting, northingParam, northernHemisphere){
 /* eslint-enable */
 
 type MapState = {
-    booliGeojson: Object,
+    booliData: ?Object,
+    booliGeojson: ?Object,
     json: Object,
-    stopsGeoJson: Object,
-    popupCoordinate: {
-        lat: number,
-        lng: number,
-    },
+    stopsGeoJson: ?Object,
+    popupFeature: ?Object,
 }
 
+const backendUrl = 'https://commutable-homes.appspot.com/all'
 class Map extends React.Component {
-    state: MapState
+    state: MapState = {
+        booliData: null,
+        booliGeojson: null,
+        json: {},
+        stopsGeoJson: null,
+        popupFeature: null,
+    }
     componentWillMount() {
         /*
          const bak = new Backend('http://www.trafikverket.se/Trafikverket/GenericMapApplication/')
@@ -99,6 +104,18 @@ class Map extends React.Component {
          }))
          */
 
+        fetch(backendUrl).then(resp => {
+            console.log('asdf ', resp)
+            if (resp.ok) {
+                console.error('bad resp')
+                throw resp || {}
+            }
+            resp.json().then(booliData => {
+                console.log('asdf ', booliData)
+                this.setState({ booliData })
+            }).catch(err => console.error(err))
+        })
+
         const data = ConstructionData
         data.features = data.features.map(featureParam => {
             const feature = featureParam
@@ -111,21 +128,28 @@ class Map extends React.Component {
             return feature
         })
 
-        const booliGeojson = {
-            type: 'FeatureCollection',
-            features: booli.sold.map(sale => ({
-                type: 'Feature',
-                geometry: {
-                    type: 'Point',
-                    coordinates: [
-                        sale.location.position.longitude,
-                        sale.location.position.latitude
-                    ]
-                },
-                properties: {
-                    Name: Math.round(sale.soldPrice / sale.livingArea)
-                }
-            }))
+        let booliGeojson: ?Object = null
+        if (this.state.booliData) {
+            booliGeojson = {
+                type: 'FeatureCollection',
+                features: this.state.booliData.sold.map(sale => ({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [
+                            sale.location.position.longitude,
+                            sale.location.position.latitude
+                        ]
+                    },
+                    properties: {
+                        name: Math.round(sale.soldPrice / sale.livingArea),
+                        coord: [
+                            sale.location.position.longitude,
+                            sale.location.position.latitude
+                        ]
+                    }
+                }))
+            }
         }
 
         const stopsGeoJson = {
@@ -140,7 +164,11 @@ class Map extends React.Component {
                     ]
                 },
                 properties: {
-                    Name: stop.stop_name
+                    name: stop.stop_name,
+                    coord: [
+                        stop.stop_lon,
+                        stop.stop_lat,
+                    ]
                 }
             }))
         }
@@ -154,15 +182,16 @@ class Map extends React.Component {
         })
     }
 
-    props: MapProps
-
     mapClick(mapParam: Object, event: Object) {
+        console.log('mapclick', mapParam, event)
         const map = mapParam
-        const features = map.queryRenderedFeatures(event.point).filter(feature => feature.layer === 'stopsGeoJson')
+        const fs = map.queryRenderedFeatures(event.point)
+        const features = fs.filter(feature => feature.layer.type === 'circle')
         map.getCanvas().style.cursor = (features.length) ? 'pointer' : ''
 
         if (!features.length) {
             // popup.remove()
+            console.error('found no features ', fs)
             return
         }
 
@@ -171,28 +200,29 @@ class Map extends React.Component {
         // Populate the popup and set its coordinates
         // based on the feature found.
         console.log('aa ', feature, event.point)
-        this.setState({ popupCoordinate: event.lngLat })
+        this.setState({ popupFeature: feature })
     }
 
     render() {
-        if (!this.state.json) {
+        const { booliGeojson, popupFeature, json, stopsGeoJson } = this.state
+        if (!json) {
             return (<div>
                 no data
             </div>)
         }
 
         const conf = {
-            accessToken: 'pk.eyJ1IjoiZmFicmljOCIsImEiOiJjaWc5aTV1ZzUwMDJwdzJrb2w0dXRmc2d0In0.p6GGlfyV-WksaDV_KdN27A',
+            accessToken: 'pk.eyJ1IjoiaGluayIsImEiOiJ0emd1UlZNIn0.NpY-l_Elzhz9aOLoql6zZQ',
             style: 'mapbox://styles/mapbox/dark-v8'
         }
-        const stopsGeoJson = 'stopsGeoJson'
+        const stopsGeoJsonName = 'stopsGeoJson'
         return (<ReactMapboxGl
             style={conf.style}
             accessToken={conf.accessToken}
-            onClick={(mapParam: Object, event: Object) => this.mapClick(mapParam, event)}
+            onMouseMove={(mapParam: Object, event: Object) => this.mapClick(mapParam, event)}
             movingMethod="jumpTo"
             containerStyle={{ height: '100vh', width: '100%' }}
-            fitBounds={this.state.popupCoordinate ? null : geojsonExtent(this.state.booliGeojson)}
+            fitBounds={popupFeature ? null : geojsonExtent(booliGeojson)}
         >
             <ScaleControl />
             <ZoomControl />
@@ -206,36 +236,36 @@ class Map extends React.Component {
              }}
              /> */}
             <GeoJSONLayer
-                id={stopsGeoJson}
-                data={this.state.stopsGeoJson}
+                id={stopsGeoJsonName}
+                data={stopsGeoJson}
                 circlePaint={{
                     'circle-color': 'blue'
                 }}
             />
-            <GeoJSONLayer
-                data={this.state.booliGeojson}
+            {booliGeojson && <GeoJSONLayer
+                data={booliGeojson}
                 symbolLayout={{
-                    'text-field': '{Name}',
+                    'text-field': '{name}',
                     'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
                     'text-offset': [0, 0.6],
                     'text-anchor': 'top'
                 }}
                 circlePaint={{
                     'circle-color': {
-                        property: 'Name',
+                        property: 'name',
                         stops: [
                             [40000, '#f1f075'],
                             [100000, '#e55e5e']
                         ]
                     }
                 }}
-            />
-            {this.state.popupCoordinate && <Popup
+            />}
+            {popupFeature && <Popup
                 key={'popup'}
                 offset={[0, -50]}
-                coordinates={[this.state.popupCoordinate.lng, this.state.popupCoordinate.lat]}
+                coordinates={JSON.parse(popupFeature.properties.coord)}
             >
-                hej
+                {popupFeature.properties.name}
             </Popup>}
         </ReactMapboxGl>)
     }
