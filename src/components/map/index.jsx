@@ -176,7 +176,7 @@ class Map extends React.Component {
         console.log('got points ', booliData.sold)
         const booliGeojson: Object = {
             type: 'FeatureCollection',
-            features: (booliData.sold || []).map(sale => {
+            features: (booliData.sold || []).filter(sale => sale.livingArea).map(sale => {
                 const name = `${sale.location.address.streetAddress}`
                 return {
                     type: 'Feature',
@@ -189,6 +189,9 @@ class Map extends React.Component {
                     },
                     properties: {
                         name,
+                        val: Math.round(sale.soldPrice / sale.livingArea),
+                        soldPrice: sale.soldPrice,
+                        livingArea: sale.livingArea,
                         coord: [
                             sale.location.position.longitude,
                             sale.location.position.latitude
@@ -286,7 +289,7 @@ class Map extends React.Component {
                 id={stopsGeoJsonName}
                 data={stopsGeoJson}
                 circlePaint={{
-                    'circle-color': 'blue'
+                    'circle-color': '#b7daff'
                 }}
             />}
             {!!booliGeojson && <GeoJSONLayer
@@ -299,20 +302,28 @@ class Map extends React.Component {
                 }}
                 circlePaint={{
                     'circle-color': {
-                        property: 'name',
+                        property: 'val',
                         stops: [
-                            [40000, '#f1f075'],
-                            [100000, '#e55e5e']
+                            [1000, '#039ef1'],
+                            [30000, '#35f107'],
+                            [60000, '#f1e412'],
+                            [150000, '#e51c07']
                         ]
                     }
                 }}
             />}
             {popupFeature && <Popup
                 key={'popup'}
-                offset={-30}
+                offset={-60}
                 coordinates={JSON.parse(popupFeature.properties.coord)}
             >
                 {popupFeature.properties.name}
+                <br />
+                {popupFeature.properties.val} kr / kvm,
+                <br />
+                {popupFeature.properties.soldPrice} kr,
+                <br />
+                {popupFeature.properties.livingArea} kvm
             </Popup>}
         </ReactMapboxGl>)
     }
