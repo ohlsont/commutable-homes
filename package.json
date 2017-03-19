@@ -5,6 +5,7 @@
   "scripts": {
     "start": "webpack-dev-server --inline --host 0.0.0.0 --port 8080 --config webpack.config.js",
     "build": "NODE_ENV='production' webpack",
+    "gh": "NODE_ENV='production' webpack --config gh.webpack.config.js",
     "analyse": "webpack --profile --json > stats.json",
     "clean": "rm build/app.js"
   },
@@ -55,6 +56,7 @@
     "file-loader": "0.9.0",
     "flow-bin": "^0.38.0",
     "flow-status-webpack-plugin": "^0.1.7",
+    "gh-pages-webpack-plugin": "^1.0.1",
     "immutable": "^3.8.1",
     "postcss-loader": "0.9.1",
     "postcss-nested": "1.0.0",
